@@ -5,8 +5,10 @@
       <map>
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/dialog.xml" value="0.33" />
-        <entry key="app/src/main/res/layout/item_note.xml" value="0.5" />
-        <entry key="app/src/main/res/layout/rewindow.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragmentbegining.xml" value="0.35572916666666665" />
+        <entry key="app/src/main/res/layout/item_note.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/note.xml" value="0.35572916666666665" />
+        <entry key="app/src/main/res/layout/rewindow.xml" value="0.22708333333333333" />
         <entry key="app/src/main/res/xml/provider.xml" value="0.35572916666666665" />
       </map>
     </option>

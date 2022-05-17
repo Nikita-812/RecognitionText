@@ -1,14 +1,15 @@
 package com.example.recognitiontext;
 
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
+
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
+
+
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,14 +32,19 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+
+
 
 public class Rewindow extends Fragment {
-    private ImageView image;
-    private TextView descript;
+    private NoteAdapter adapter = new NoteAdapter();
+
+
+
+    private TextDao dao;
     private Uri imageUri;
     private final TextRecognizer textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    RecyclerView recyclerView;
 
     @Nullable
     @Override
@@ -49,19 +55,33 @@ public class Rewindow extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        dao = App.getAppDatabaseInstance().textDao(); //create database
+        Log.d("MyLog","create dao");
+
+        recyclerView = view.findViewById(R.id.recycler);//create recycler
+        initRecycler();
         FloatingActionButton addButton = view.findViewById(R.id.addButton);
-        image = view.findViewById(R.id.image);
-        descript = view.findViewById(R.id.description);
         getImageUri();
-        ActivityResultLauncher<Uri> takePhoto = registerForActivityResult(
+        ActivityResultLauncher<Uri> takePhoto = registerForActivityResult(//do photo
                 new ActivityResultContracts.TakePicture(),
                 isSuccess -> {
+                    Log.d("MyLog","did photo");
                     if (isSuccess) processImage();
                 }
         );
         addButton.setOnClickListener(v -> {
             takePhoto.launch(imageUri);
         });
+    }
+
+    private void initRecycler() {
+        Log.d("MyLog","init recycler");
+        recyclerView.setAdapter(adapter);
+        dao.getAllToItemNote().observe(requireActivity(),itemNotes -> {
+            adapter.setAdapter(itemNotes);
+        });
+
     }
 
     @Override
@@ -71,23 +91,29 @@ public class Rewindow extends Fragment {
     }
 
     private void processImage() {
-        image.setImageURI(imageUri);
         try {
-            Task<Text> recognizeTask = textRecognizer.process(InputImage.fromFilePath(getContext(),imageUri));
+            Task<Text> recognizeTask = textRecognizer.process(InputImage.fromFilePath(requireActivity(),imageUri));
             recognizeTask.
                     addOnSuccessListener(text -> {
-                        descript.setText(text.getText());
+                        if(text!=null) {
+                            Log.d("MyLog","recognition correct");
+                            dao.insert(new ItemNote(text.getText()).toTextdb());
+                            adapter.addItem(new ItemNote(text.getText()));
+                        }
+                        else {
+                            Log.d("Mylog","recognititon uncorrect");
+                            Toast.makeText(requireActivity(), "no text on this photo", Toast.LENGTH_SHORT).show();
+                        }
                     });
         } catch (IOException e) {
             e.printStackTrace();
+
         }
-
-
     }
+
     private void getImageUri() {
-        File file = new File(getContext().getFilesDir(), "pictureFromCamera");
-        imageUri = FileProvider.getUriForFile(getContext(), getContext().getApplicationContext().getPackageName() + ".provider", file);
+        File file = new File(requireActivity().getFilesDir(), "pictureFromCamera");
+        imageUri = FileProvider.getUriForFile(requireActivity(), requireActivity().getPackageName() + ".provider", file);
     }
 
-
-    }
+}
