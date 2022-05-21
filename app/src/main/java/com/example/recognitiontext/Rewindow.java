@@ -2,14 +2,10 @@ package com.example.recognitiontext;
 
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.util.Log;
 import android.view.LayoutInflater;
-
 import android.view.View;
 import android.view.ViewGroup;
-
-
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -28,16 +24,12 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
-
-
 import java.io.File;
 import java.io.IOException;
 
 
-
 public class Rewindow extends Fragment {
-    private NoteAdapter adapter = new NoteAdapter();
-
+    private final NoteAdapter adapter = new NoteAdapter(this::onClickNote);
 
 
     private TextDao dao;
@@ -55,9 +47,9 @@ public class Rewindow extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        addResultListener();
         dao = App.getAppDatabaseInstance().textDao(); //create database
-        Log.d("MyLog","create dao");
+        Log.d("MyLog", "create dao");
 
         recyclerView = view.findViewById(R.id.recycler);//create recycler
         initRecycler();
@@ -66,7 +58,7 @@ public class Rewindow extends Fragment {
         ActivityResultLauncher<Uri> takePhoto = registerForActivityResult(//do photo
                 new ActivityResultContracts.TakePicture(),
                 isSuccess -> {
-                    Log.d("MyLog","did photo");
+                    Log.d("MyLog", "did photo");
                     if (isSuccess) processImage();
                 }
         );
@@ -76,10 +68,11 @@ public class Rewindow extends Fragment {
     }
 
     private void initRecycler() {
-        Log.d("MyLog","init recycler");
+        Log.d("MyLog", "init recycler");
         recyclerView.setAdapter(adapter);
-        dao.getAllToItemNote().observe(requireActivity(),itemNotes -> {
-            adapter.setAdapter(itemNotes);
+        dao.getAllToItemNote().observe(requireActivity(), itemNotes -> {
+            Log.d("MyLog", "data complete: " + itemNotes.size());
+            adapter.setItems(itemNotes);
         });
 
     }
@@ -92,16 +85,15 @@ public class Rewindow extends Fragment {
 
     private void processImage() {
         try {
-            Task<Text> recognizeTask = textRecognizer.process(InputImage.fromFilePath(requireActivity(),imageUri));
+            Task<Text> recognizeTask = textRecognizer.process(InputImage.fromFilePath(requireActivity(), imageUri));
             recognizeTask.
                     addOnSuccessListener(text -> {
-                        if(text!=null) {
-                            Log.d("MyLog","recognition correct");
-                            dao.insert(new ItemNote(text.getText()).toTextdb());
+                        if (text != null) {
+                            Log.d("MyLog", "recognition correct");
+                            new Thread(() -> dao.insert(new ItemNote(text.getText()).toTextdb())).start();
                             adapter.addItem(new ItemNote(text.getText()));
-                        }
-                        else {
-                            Log.d("Mylog","recognititon uncorrect");
+                        } else {
+                            Log.d("Mylog", "recognititon uncorrect");
                             Toast.makeText(requireActivity(), "no text on this photo", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -109,6 +101,29 @@ public class Rewindow extends Fragment {
             e.printStackTrace();
 
         }
+    }
+    private void addResultListener() {
+        getParentFragmentManager().setFragmentResultListener(
+                NotePreview.RESULT,
+                this,
+                (requestKey, result) -> {
+                    ItemNote item = (ItemNote) result.getSerializable(NotePreview.ARG_ITEM);
+                    new Thread(() -> dao.insert(item.toTextdb())).start();
+                }
+        );
+    }
+
+
+
+    private void onClickNote(ItemNote note) {
+        String s = dao.getAllToItemNote().observe(requireActivity(), itemNotes -> {});
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, NotePreview.newInstance(s))
+                .addToBackStack(null)
+                .commit();
+        // TODO сделать вызов фрагмента NotePreview
+        Toast.makeText(requireActivity(), "Fragment visible is view", Toast.LENGTH_LONG).show();
     }
 
     private void getImageUri() {

@@ -15,7 +15,11 @@ import java.util.List;
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     private final ArrayList<ItemNote> adapter = new ArrayList<>();
 
+    private final NoteClickListener callback;
 
+    public NoteAdapter(NoteClickListener callback) {
+        this.callback = callback;
+    }
 
 
     @NonNull
@@ -34,7 +38,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         return adapter.size();
     }
 
-    public void setAdapter(List<ItemNote> adapter){
+    public void setItems(List<ItemNote> adapter){
         this.adapter.clear();
         this.adapter.addAll(adapter);
         notifyDataSetChanged();
@@ -61,6 +65,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             root = itemView.findViewById(R.id.root);
         }
         void bind(ItemNote item){
+            itemView.findViewById(R.id.root).setOnClickListener(v-> callback.onClick(item));
             description.setText(item.getName());
         }
     }

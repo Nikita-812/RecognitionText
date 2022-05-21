@@ -2,7 +2,9 @@ package com.example.recognitiontext;
 
 import androidx.room.ColumnInfo;
 
-public class ItemNote{
+import java.io.Serializable;
+
+public class ItemNote implements Serializable {
     @ColumnInfo(name = "text")
     final String name;
 
