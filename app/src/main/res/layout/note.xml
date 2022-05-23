@@ -13,10 +13,10 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/delButton"
-        android:text="@tools:sample/cities"/>
+        android:text="Заголовок"/>
     <EditText
         android:id="@+id/description"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/headline"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"

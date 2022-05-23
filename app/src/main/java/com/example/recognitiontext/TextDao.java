@@ -12,10 +12,10 @@ import java.util.List;
 @Dao
 public interface TextDao {
     @Query("SELECT * FROM TextDb")
-    LiveData<List<ItemNote>> getAllToItemNote();
+    LiveData<List<TextDb>> getAllToItemNote();
 
-    @Query("SELECT * FROM TextDb WHERE id == id")
-    LiveData<String> getStringForNote(Long id);// здесь должен был быть запрос строки по id
+    @Query("SELECT * FROM TextDb WHERE id == :id")
+    LiveData<TextDb> getStringForNote(long id);// здесь должен был быть запрос строки по id
 
 
     @Insert

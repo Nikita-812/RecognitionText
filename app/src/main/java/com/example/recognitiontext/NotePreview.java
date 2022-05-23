@@ -1,6 +1,7 @@
 package com.example.recognitiontext;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class NotePreview extends Fragment {
     public final static String TAG = "NotePreview";
+    public final static String DEL_TAG = "DeleteNote";
     public final static String RESULT = "NotePreview_Result";
     public final static String ARG_ITEM = "Result_ItemNote";
     public final static String ARG_ID = "arg_id";
@@ -21,10 +23,10 @@ public class NotePreview extends Fragment {
     private EditText editText;
     private FloatingActionButton saveButton;
 
-    public static Fragment newInstance(String s){
+    public static Fragment newInstance(TextDb item){
         Fragment fragment = new NotePreview();
         Bundle bundle = new Bundle();
-        bundle.putString(ARG_ID,s);
+        bundle.putSerializable(ARG_ID, item);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -45,20 +47,28 @@ public class NotePreview extends Fragment {
 
         Bundle arguments = getArguments();
 
-        assert arguments != null;
-        String lineFromDB = getArguments().getString(ARG_ID,"No text");
-        editText.setText(lineFromDB);
+        TextDb lineFromDB = (TextDb) arguments.getSerializable(ARG_ID);
+        if(lineFromDB!=null) editText.setText(lineFromDB.text);
+        else editText.setText("no text");
 
 
         saveButton.setOnClickListener(v->{
-            String s = editText.toString();
+            Log.d("MYLog","save is send");
             Bundle bundle = new Bundle();
-            bundle.putSerializable(ARG_ITEM,new ItemNote(s));
+            bundle.putBoolean(DEL_TAG,false);
+            bundle.putSerializable(ARG_ITEM,new TextDb(lineFromDB.id, editText.getText().toString()));
             getParentFragmentManager().setFragmentResult(RESULT, bundle);
+            requireActivity().getSupportFragmentManager().popBackStack();
         });
 
 
         delButton.setOnClickListener(v -> {
+            Log.d("MYLog","del is send");
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(DEL_TAG,true);
+            bundle.putSerializable(ARG_ITEM,new TextDb(lineFromDB.id,editText.getText().toString()));
+            getParentFragmentManager().setFragmentResult(RESULT,bundle);
+            requireActivity().getSupportFragmentManager().popBackStack();
 
         });
 

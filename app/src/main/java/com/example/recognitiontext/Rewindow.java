@@ -1,5 +1,7 @@
 package com.example.recognitiontext;
 
+import static com.example.recognitiontext.NotePreview.DEL_TAG;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,11 +33,9 @@ import java.io.IOException;
 public class Rewindow extends Fragment {
     private final NoteAdapter adapter = new NoteAdapter(this::onClickNote);
 
-
     private TextDao dao;
     private Uri imageUri;
     private final TextRecognizer textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-    static final int REQUEST_IMAGE_CAPTURE = 1;
     RecyclerView recyclerView;
 
     @Nullable
@@ -47,13 +47,12 @@ public class Rewindow extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        addResultListener();
         dao = App.getAppDatabaseInstance().textDao(); //create database
+        FloatingActionButton addButton = view.findViewById(R.id.addButton);
         Log.d("MyLog", "create dao");
-
         recyclerView = view.findViewById(R.id.recycler);//create recycler
         initRecycler();
-        FloatingActionButton addButton = view.findViewById(R.id.addButton);
+        addResultListener();
         getImageUri();
         ActivityResultLauncher<Uri> takePhoto = registerForActivityResult(//do photo
                 new ActivityResultContracts.TakePicture(),
@@ -75,6 +74,7 @@ public class Rewindow extends Fragment {
             adapter.setItems(itemNotes);
         });
 
+
     }
 
     @Override
@@ -90,11 +90,10 @@ public class Rewindow extends Fragment {
                     addOnSuccessListener(text -> {
                         if (text != null) {
                             Log.d("MyLog", "recognition correct");
-                            new Thread(() -> dao.insert(new ItemNote(text.getText()).toTextdb())).start();
-                            adapter.addItem(new ItemNote(text.getText()));
+                            new Thread(() -> dao.insert(new TextDb(text.getText()))).start();
+                            adapter.addItem(new TextDb(text.getText()));
                         } else {
                             Log.d("Mylog", "recognititon uncorrect");
-                            Toast.makeText(requireActivity(), "no text on this photo", Toast.LENGTH_SHORT).show();
                         }
                     });
         } catch (IOException e) {
@@ -107,28 +106,38 @@ public class Rewindow extends Fragment {
                 NotePreview.RESULT,
                 this,
                 (requestKey, result) -> {
-                    ItemNote item = (ItemNote) result.getSerializable(NotePreview.ARG_ITEM);
-                    new Thread(() -> dao.insert(item.toTextdb())).start();
+                    TextDb note =(TextDb) result.getSerializable(NotePreview.ARG_ITEM);
+                    if(result.getBoolean(DEL_TAG)){
+                        Log.d("MYLog","delete");
+                        new Thread(() -> dao.delete(note)).start();
+                        adapter.deleteItem(note);
+
+                        Log.d("MYLog","unsubscribe");
+                    }
+                    else{
+                        Log.d("MYLog","save");
+
+                        new Thread(() -> dao.update(note)).start();
+                    }
                 }
         );
     }
+    private void onClickNote(@NonNull TextDb note) {
+        dao.getStringForNote(note.id).observe(requireActivity(), itemNotes -> {
+            Log.d("MYLog","2x");
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container, NotePreview.newInstance(itemNotes))
+                    .addToBackStack(null)
+                    .commit();
+        });
 
 
 
-    private void onClickNote(ItemNote note) {
-        String s = dao.getAllToItemNote().observe(requireActivity(), itemNotes -> {});
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, NotePreview.newInstance(s))
-                .addToBackStack(null)
-                .commit();
-        // TODO сделать вызов фрагмента NotePreview
-        Toast.makeText(requireActivity(), "Fragment visible is view", Toast.LENGTH_LONG).show();
+
     }
-
     private void getImageUri() {
         File file = new File(requireActivity().getFilesDir(), "pictureFromCamera");
         imageUri = FileProvider.getUriForFile(requireActivity(), requireActivity().getPackageName() + ".provider", file);
     }
-
 }
