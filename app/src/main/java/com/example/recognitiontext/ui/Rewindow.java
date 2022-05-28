@@ -1,6 +1,6 @@
-package com.example.recognitiontext;
+package com.example.recognitiontext.ui;
 
-import static com.example.recognitiontext.NotePreview.DEL_TAG;
+import static com.example.recognitiontext.ui.NotePreview.DEL_TAG;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -18,6 +17,12 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.recognitiontext.R;
+import com.example.recognitiontext.db.App;
+import com.example.recognitiontext.db.TextDao;
+import com.example.recognitiontext.db.TextDb;
+import com.example.recognitiontext.ui.NoteAdapter;
+import com.example.recognitiontext.ui.NotePreview;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.mlkit.vision.common.InputImage;
@@ -51,8 +56,9 @@ public class Rewindow extends Fragment {
         FloatingActionButton addButton = view.findViewById(R.id.addButton);
         Log.d("MyLog", "create dao");
         recyclerView = view.findViewById(R.id.recycler);//create recycler
-        initRecycler();
         addResultListener();
+        initRecycler();
+
         getImageUri();
         ActivityResultLauncher<Uri> takePhoto = registerForActivityResult(//do photo
                 new ActivityResultContracts.TakePicture(),
@@ -73,6 +79,7 @@ public class Rewindow extends Fragment {
             Log.d("MyLog", "data complete: " + itemNotes.size());
             adapter.setItems(itemNotes);
         });
+
 
 
     }
@@ -111,12 +118,10 @@ public class Rewindow extends Fragment {
                         Log.d("MYLog","delete");
                         new Thread(() -> dao.delete(note)).start();
                         adapter.deleteItem(note);
-
                         Log.d("MYLog","unsubscribe");
                     }
                     else{
                         Log.d("MYLog","save");
-
                         new Thread(() -> dao.update(note)).start();
                     }
                 }
@@ -131,9 +136,6 @@ public class Rewindow extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
-
-
 
     }
     private void getImageUri() {

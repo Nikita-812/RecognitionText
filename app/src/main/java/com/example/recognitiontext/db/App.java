@@ -1,4 +1,4 @@
-package com.example.recognitiontext;
+package com.example.recognitiontext.db;
 
 import android.app.Application;
 

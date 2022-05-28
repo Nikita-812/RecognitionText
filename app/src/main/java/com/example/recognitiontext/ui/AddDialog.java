@@ -1,4 +1,4 @@
-package com.example.recognitiontext;
+package com.example.recognitiontext.ui;
 
 import android.content.Context;
 import android.os.Bundle;

@@ -1,4 +1,4 @@
-package com.example.recognitiontext;
+package com.example.recognitiontext.ui;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.recognitiontext.R;
+import com.example.recognitiontext.db.TextDb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +49,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         public void addItem(TextDb item) {
         adapter.add(item);
         notifyItemInserted(getItemCount() - 1);
-    }
-    public void deleteItemByPosition(int position){
-        adapter.remove(position);
-        notifyDataSetChanged();
     }
     public void deleteItem(TextDb itemNote){
         adapter.remove(itemNote);
