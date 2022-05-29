@@ -23,14 +23,12 @@ public class NotePreview extends Fragment {
     public final static String RESULT = "NotePreview_Result";
     public final static String ARG_ITEM = "Result_ItemNote";
     public final static String ARG_ID = "arg_id";
-    private FloatingActionButton delButton;
     private EditText editText;
-    private FloatingActionButton saveButton;
 
     public static Fragment newInstance(TextDb item){
         Fragment fragment = new NotePreview();
         Bundle bundle = new Bundle();
-        bundle.putSerializable(ARG_ID, (Serializable) item);
+        bundle.putSerializable(ARG_ID, item);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -47,9 +45,9 @@ public class NotePreview extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
 
-        saveButton = view.findViewById(R.id.save);
+        FloatingActionButton saveButton = view.findViewById(R.id.save);
         editText = view.findViewById(R.id.description);
-        delButton = view.findViewById(R.id.delButton);
+        FloatingActionButton delButton = view.findViewById(R.id.delButton);
 
         Bundle arguments = getArguments();
 
@@ -67,10 +65,9 @@ public class NotePreview extends Fragment {
             Bundle bundle = new Bundle();
             bundle.putBoolean(DEL_TAG,false);
 
-            TextDb item = new TextDb(finalLineFromDB.id, editText.getText().toString());
             bundle.putSerializable(ARG_ITEM,new TextDb(finalLineFromDB.id, editText.getText().toString()));
             getParentFragmentManager().setFragmentResult(RESULT, bundle);
-            requireActivity().getSupportFragmentManager().popBackStack();
+
         });
 
 

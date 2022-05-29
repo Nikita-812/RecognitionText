@@ -1,5 +1,6 @@
 package com.example.recognitiontext.ui;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         return adapter.size();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setItems(List<TextDb> adapter){
         this.adapter.clear();
         this.adapter.addAll(adapter);
@@ -50,6 +52,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         adapter.add(item);
         notifyItemInserted(getItemCount() - 1);
     }
+    @SuppressLint("NotifyDataSetChanged")
     public void deleteItem(TextDb itemNote){
         adapter.remove(itemNote);
         notifyDataSetChanged();
